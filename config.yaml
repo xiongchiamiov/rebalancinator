@@ -1,0 +1,18 @@
+- accounts: 1234, 2345
+  portfolio:
+    85: # equity
+      60: # US
+        85: SCHB # broad
+        15: AVUV # small cap value tilt
+      40: # international
+        75: # developed ex-US
+          85: SCHF # broad
+          15: AVDV # small cap value tilt
+        25: # emerging
+          85: SCHE # broad
+          15: AVES # value tilt
+    15: # bonds
+        100: SCHQ # long-term treasuries
+- accounts: 3456
+  portfolio:
+    VTI: 100
