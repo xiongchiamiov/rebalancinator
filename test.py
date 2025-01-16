@@ -13,19 +13,19 @@ class TestCalculateAllocations(unittest.TestCase):
         self.assertEqual(calculate_allocations([{100: 'VFIFX'}]), {'VFIFX': 100})
 
     def test_two_fund(self):
-        self.assertEqual(calculate_allocations([{60: 'VTI', 40: 'BND'}]),
-                         {'VTI': 60, 'BND': 40})
+        self.assertEqual(calculate_allocations([{60: 'VT', 40: 'BND'}]),
+                         {'VT': 60, 'BND': 40})
 
     def test_two_layer(self):
         self.assertEqual(calculate_allocations(
             [
                 {60: [
-                    {50: 'VT'},
+                    {50: 'VTI'},
                     {50: 'VXUS'},
                 ]},
                 {40: 'BND'},
             ]),
-            {'VT': 30, 'VXUS': 30, 'BND': 40})
+            {'VTI': 30, 'VXUS': 30, 'BND': 40})
 
 if __name__ == '__main__':
     unittest.main()

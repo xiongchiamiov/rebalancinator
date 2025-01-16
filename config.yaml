@@ -15,7 +15,7 @@
         100: SCHQ # long-term treasuries
 - accounts: 3456
   portfolio:
-    - 100: VTI # total world stock
+    - 100: VT # total world stock
 
 # Here's another potential config format, inspired by Ansible.  This is
 # arguably cleaner, but it's significantly longer and I think that impacts
