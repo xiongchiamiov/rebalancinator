@@ -12,7 +12,7 @@
           - 85: SCHE # broad
           - 15: AVES # value tilt
     - 15: # bonds
-        100: SCHQ # long-term treasuries
+      - 100: SCHQ # long-term treasuries
 - accounts: 3456
   portfolio:
     - 100: VT # total world stock
