@@ -6,12 +6,13 @@ import yaml
 
 def calculate_allocations(portfolio, multiplier=1):
     allocations = {}
-    for percentage, investment in portfolio.items():
-        if isinstance(investment, str):
-            allocations[investment] = int(percentage * multiplier)
-            continue
+    for asset_class in portfolio:
+        for percentage, investment in asset_class.items():
+            if isinstance(investment, str):
+                allocations[investment] = int(percentage * multiplier)
+                continue
 
-        allocations.update(calculate_allocations(investment, percentage/100))
+            allocations.update(calculate_allocations(investment, percentage/100))
 
     return allocations
 

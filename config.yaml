@@ -1,18 +1,70 @@
 - accounts: 1234, 2345
   portfolio:
-    85: # equity
-      60: # US
-        85: SCHB # broad
-        15: AVUV # small cap value tilt
-      40: # international
-        75: # developed ex-US
-          85: SCHF # broad
-          15: AVDV # small cap value tilt
-        25: # emerging
-          85: SCHE # broad
-          15: AVES # value tilt
-    15: # bonds
+    - 85: # equity
+      - 60: # US
+        - 85: SCHB # broad
+        - 15: AVUV # small cap value tilt
+      - 40: # international
+        - 75: # developed ex-US
+          - 85: SCHF # broad
+          - 15: AVDV # small cap value tilt
+        - 25: # emerging
+          - 85: SCHE # broad
+          - 15: AVES # value tilt
+    - 15: # bonds
         100: SCHQ # long-term treasuries
 - accounts: 3456
   portfolio:
-    VTI: 100
+    - 100: VTI # total world stock
+
+# Here's another potential config format, inspired by Ansible.  This is
+# arguably cleaner, but it's significantly longer and I think that impacts
+# readability.  It would be easier to parse, but the main advantage would be
+# ability to add further fields later, or to programmatically know the "names"
+# of portfolio slices now.
+#- accounts: 1234, 2345
+#  portfolio:
+#    equity:
+#      percentage: 85
+#      portfolio:
+#        us:
+#          percentage: 60
+#          portfolio:
+#            broad:
+#              percentage: 85
+#              ticker: SCHB
+#            scv tilt:
+#              percentage: 15
+#              ticker: AVUV
+#        international:
+#          percentage: 40
+#          portfolio:
+#            developed:
+#              percentage: 75
+#              portfolio:
+#                broad:
+#                  percentage: 85
+#                  ticker: SCHF
+#                scv tilt:
+#                  percentage: 15
+#                  ticker: AVDV
+#            emerging:
+#              percentage: 25
+#              portfolio:
+#                broad:
+#                  percentage: 85
+#                  ticker: SCHE
+#                value tilt:
+#                  percentage: 15
+#                  ticker: AVES
+#    bonds:
+#      percentage: 15
+#      portfolio:
+#        long-term treasuries:
+#          percentage: 100
+#          ticker: SCHQ
+#- accounts: 3456
+#  portfolio:
+#    total world stock:
+#      percentage: 100
+#      ticker: VTI
