@@ -1,13 +1,25 @@
 #!/usr/bin/env python3
 import unittest
-from rebalance import calculate_allocations
+from rebalance import IncorrectWeightingException, calculate_allocations
 
 class TestCalculateAllocations(unittest.TestCase):
     def test_empty(self):
-        pass #self.assertEqual(calculate_allocations({}), 
+        with self.assertRaises(IncorrectWeightingException):
+            calculate_allocations({})
 
     def test_not_100(self):
-        pass
+        with self.assertRaises(IncorrectWeightingException):
+            calculate_allocations([{90: 'VTI'}, {90: 'VXUS'}])
+
+        with self.assertRaises(IncorrectWeightingException):
+            calculate_allocations(
+                [
+                    {60: [
+                        {50: 'VTI'},
+                        {49: 'VXUS'},
+                    ]},
+                    {40: 'BND'},
+                ])
 
     def test_one_fund(self):
         self.assertEqual(calculate_allocations([{100: 'VFIFX'}]), {'VFIFX': 100})
