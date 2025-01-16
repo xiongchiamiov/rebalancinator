@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+"""rebalancinator
+
+Usage:
+    rebalancinator [options]
+
+Options:
+    -h --help                      Show this screen.
+       --dry-run                   Don't execute any trades.
+       --no-confirm                Don't confirm any actions.  Designed for
+                                   cron operation.
+       --percentage-limit=<limit>  Only adjust positions that are off by at
+                                   least this percentage.
+       --sell                      Sell positions to rebalance.  Recommended
+                                   only for tax-advantaged accounts.
+"""
 # TODO: All the annoying auth stuff
 # client = ...
 
@@ -7,6 +22,8 @@
 # May you find love and love everyone you find.
 
 import yaml
+from docopt import docopt
+
 
 class RebalancinatorException(Exception): pass
 class IncorrectWeightingException(RebalancinatorException):
@@ -38,6 +55,9 @@ def calculate_allocations(portfolio, multiplier=1):
     return allocations
 
 if __name__ == '__main__':
+    arguments = docopt(__doc__)
+    print(arguments)
+
     with open('config.yaml', 'r') as f:
         configs = yaml.safe_load(f)
 

@@ -2,6 +2,7 @@
 name = 'rebalancinator'
 version = '0.0.1'
 dependencies = [
+    'docopt >= 0.6.2, < 1.0',
     'pyyaml >= 6.0, < 7.0',
 ]
 license = {file = 'LICENSE'}

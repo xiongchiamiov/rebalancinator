@@ -4,5 +4,7 @@
 #
 #    pip-compile
 #
+docopt==0.6.2
+    # via rebalancinator (pyproject.toml)
 pyyaml==6.0.2
     # via rebalancinator (pyproject.toml)
