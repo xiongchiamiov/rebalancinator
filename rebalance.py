@@ -34,6 +34,14 @@ class IncorrectWeightingException(RebalancinatorException):
         return "Weights don't add up to 100: {}".format(self.allocations)
 
 def calculate_allocations(portfolio, multiplier=1):
+    """Given a nested portfolio, return the desired allocation for each
+    position.
+
+    portfolio:   A list of dicts in a format not specified here.
+    multiplier:  Multiply all values by this.  Intended to be used when we're
+                 looking already at a subset of the overall portfolio (eg 50%
+                 of 10% of the portfolio would be 50*.1=5%).
+    """
     allocations = {}
     running_total = 0
     for asset_class in portfolio:
