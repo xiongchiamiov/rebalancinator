@@ -25,13 +25,17 @@ import yaml
 from docopt import docopt
 
 
-class RebalancinatorException(Exception): pass
+class RebalancinatorException(Exception):
+    pass
+
+
 class IncorrectWeightingException(RebalancinatorException):
     def __init__(self, allocations):
         self.allocations = allocations
 
     def __str__(self):
         return "Weights don't add up to 100: {}".format(self.allocations)
+
 
 def calculate_allocations(portfolio, multiplier=1):
     """Given a nested portfolio, return the desired allocation for each
@@ -54,13 +58,15 @@ def calculate_allocations(portfolio, multiplier=1):
                 continue
 
             # If it's a nested breakdown instead, recurse.
-            allocations.update(calculate_allocations(investment, percentage/100))
+            allocations.update(
+                calculate_allocations(investment, percentage/100))
 
     # Check that the user correctly gave us numbers that add up to 100%.
     if running_total != 100:
         raise IncorrectWeightingException(allocations)
 
     return allocations
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)

@@ -2,6 +2,7 @@
 import unittest
 from rebalance import IncorrectWeightingException, calculate_allocations
 
+
 class TestCalculateAllocations(unittest.TestCase):
     def test_empty(self):
         with self.assertRaises(IncorrectWeightingException):
@@ -22,7 +23,8 @@ class TestCalculateAllocations(unittest.TestCase):
                 ])
 
     def test_one_fund(self):
-        self.assertEqual(calculate_allocations([{100: 'VFIFX'}]), {'VFIFX': 100})
+        self.assertEqual(calculate_allocations([{100: 'VFIFX'}]),
+                         {'VFIFX': 100})
 
     def test_two_fund(self):
         self.assertEqual(calculate_allocations([{60: 'VT', 40: 'BND'}]),
@@ -38,6 +40,7 @@ class TestCalculateAllocations(unittest.TestCase):
                 {40: 'BND'},
             ]),
             {'VTI': 30, 'VXUS': 30, 'BND': 40})
+
 
 if __name__ == '__main__':
     unittest.main()
