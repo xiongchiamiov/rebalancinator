@@ -65,7 +65,10 @@ def calculate_allocations(portfolio, multiplier=1):
     if running_total != 100:
         raise IncorrectWeightingException(allocations)
 
-    return allocations
+    # Sort the dict with largest first, because that's convenient and if this
+    # is a performance issue your portfolio is too complex.
+    # https://stackoverflow.com/a/613218/120999
+    return dict(sorted(allocations.items(), key=lambda item: item[1], reverse=True))
 
 
 if __name__ == '__main__':
@@ -77,3 +80,8 @@ if __name__ == '__main__':
 
     for config in configs:
         target_allocation = calculate_allocations(config['portfolio'])
+        print('For accounts {}, the target asset allocation is:'
+              .format(config['accounts']))
+        for ticker, percentage in target_allocation.items():
+            print('    {}: {}'.format(ticker, percentage))
+        print()
