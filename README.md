@@ -36,3 +36,21 @@ Schwab's API.  It's also just a fun project.
 [three-fund portfolio]: https://www.bogleheads.org/wiki/Three-fund_portfolio
 [pay yourself first]: https://www.investopedia.com/terms/p/payyourselffirst.asp
 [infrastructure-as-code]: https://www.hashicorp.com/resources/what-is-infrastructure-as-code
+
+Hacking
+-------
+
+To get everything installed:
+
+```
+[$]> python3 -m venv env
+[$]> source env/bin/activate
+(env)[$]> python -m pip install pip-tools
+(env)[$]> pip-sync
+```
+
+Running tests:
+
+```
+(env)[$]> ./test.py
+```
