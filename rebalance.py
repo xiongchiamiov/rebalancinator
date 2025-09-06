@@ -14,8 +14,6 @@ Options:
        --sell                      Sell positions to rebalance.  Recommended
                                    only for tax-advantaged accounts.
 """
-# TODO: All the annoying auth stuff
-# client = ...
 
 # May you recognize your weaknesses and share your strengths.
 # May you share freely, never taking more than you give.
@@ -23,6 +21,7 @@ Options:
 
 import yaml
 from docopt import docopt
+from schwab.auth import easy_client
 
 
 class RebalancinatorException(Exception):
@@ -74,6 +73,14 @@ def calculate_allocations(portfolio, multiplier=1):
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     print(arguments)
+
+    # TODO: Probably use a different/better method of pulling in these keys.
+    # But this works for now.
+    import local_settings
+    client = easy_client(api_key=local_settings.APP_KEY,
+                         app_secret=local_settings.APP_SECRET,
+                         callback_url='https://127.0.0.1:8182',
+                         token_path='token.json')
 
     with open('config.yaml', 'r') as f:
         configs = yaml.safe_load(f)

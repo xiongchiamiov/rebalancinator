@@ -4,7 +4,71 @@
 #
 #    pip-compile
 #
+anyio==4.10.0
+    # via httpx
+authlib==1.6.3
+    # via schwab-py
+autopep8==2.3.2
+    # via schwab-py
+blinker==1.9.0
+    # via flask
+certifi==2025.8.3
+    # via
+    #   httpcore
+    #   httpx
+    #   schwab-py
+cffi==1.17.1
+    # via cryptography
+click==8.2.1
+    # via flask
+cryptography==45.0.7
+    # via authlib
+dill==0.4.0
+    # via multiprocess
 docopt==0.6.2
     # via rebalancinator (pyproject.toml)
+flask==3.1.2
+    # via schwab-py
+h11==0.16.0
+    # via httpcore
+httpcore==1.0.9
+    # via httpx
+httpx==0.28.1
+    # via schwab-py
+idna==3.10
+    # via
+    #   anyio
+    #   httpx
+itsdangerous==2.2.0
+    # via flask
+jinja2==3.1.6
+    # via flask
+markupsafe==3.0.2
+    # via
+    #   flask
+    #   jinja2
+    #   werkzeug
+multiprocess==0.70.18
+    # via schwab-py
+psutil==7.0.0
+    # via schwab-py
+pycodestyle==2.14.0
+    # via autopep8
+pycparser==2.22
+    # via cffi
+python-dateutil==2.9.0.post0
+    # via schwab-py
 pyyaml==6.0.2
     # via rebalancinator (pyproject.toml)
+schwab-py==1.5.1
+    # via rebalancinator (pyproject.toml)
+six==1.17.0
+    # via python-dateutil
+sniffio==1.3.1
+    # via anyio
+urllib3==2.5.0
+    # via schwab-py
+websockets==15.0.1
+    # via schwab-py
+werkzeug==3.1.3
+    # via flask
