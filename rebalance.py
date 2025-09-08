@@ -19,8 +19,11 @@ Options:
 # May you share freely, never taking more than you give.
 # May you find love and love everyone you find.
 
+import httpx
 import yaml
 from docopt import docopt
+from functools import cached_property
+from schwab.client import Client
 from schwab.auth import easy_client
 
 
@@ -70,6 +73,40 @@ def calculate_allocations(portfolio, multiplier=1):
     return dict(sorted(allocations.items(), key=lambda item: item[1], reverse=True))
 
 
+class SchwabAccount:
+    def __init__(self, client, account_number):
+        self._client = client
+        self.account_number = account_number
+
+    @cached_property
+    def _account_hash(self):
+        response = self._client.get_account_numbers()
+        assert response.status_code == httpx.codes.OK, response.raise_for_status()
+
+        for mapping in response.json():
+            if mapping['accountNumber'] == self.account_number:
+                return mapping['hashValue']
+
+        # TODO: Throw some sort of exception
+        return None
+
+    def calculate_allocations(self):
+        allocations = {}
+
+        response = self._client.get_account(self._account_hash,
+                                            fields=Client.Account.Fields.POSITIONS)
+        assert response.status_code == httpx.codes.OK, response.raise_for_status()
+
+        total = response.json()['aggregatedBalance']['liquidationValue']
+        for position in response.json()['securitiesAccount']['positions']:
+            ticker = position['instrument']['symbol']
+            value = position['marketValue']
+            allocations[ticker] = value / total * 100
+        allocations['Cash'] = response.json()['securitiesAccount']['currentBalances']['cashAvailableForTrading'] / total * 100
+
+        return allocations
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     print(arguments)
@@ -92,3 +129,13 @@ if __name__ == '__main__':
         for ticker, percentage in target_allocation.items():
             print('    {}: {}'.format(ticker, percentage))
         print()
+
+        account_numbers = [x.strip() for x in str(config['accounts']).split(',')]
+        for account_number in account_numbers:
+            account = SchwabAccount(client, account_number)
+            current_allocation = account.calculate_allocations()
+            print('For account {}, the current asset allocation is:'
+                  .format(account_number))
+            for ticker, percentage in current_allocation.items():
+                print('    {}: {}'.format(ticker, percentage))
+            print()
