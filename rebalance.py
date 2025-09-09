@@ -21,6 +21,7 @@ Options:
 
 import httpx
 import yaml
+from collections import namedtuple
 from docopt import docopt
 from functools import cached_property
 from schwab.client import Client
@@ -73,10 +74,30 @@ def calculate_allocations(portfolio, multiplier=1):
     return dict(sorted(allocations.items(), key=lambda item: item[1], reverse=True))
 
 
+class Portfolio:
+    def __init__(self):
+        self.cash = None
+        self.positions = {}
+
+    def __str__(self):
+        string = []
+        for ticker, percentage in self.positions.items():
+            string.append('    {}: {}'.format(ticker, percentage))
+        string.append('    Cash: {}'.format(self.cash))
+
+        return '\n'.join(string)
+
+
+Position = namedtuple('Position', ['dollars', 'percent', 'shares'])
+Price = namedtuple('Price', ['bid', 'ask'])
+
+
 class SchwabAccount:
     def __init__(self, client, account_number):
         self._client = client
         self.account_number = account_number
+        self.portfolio = Portfolio()
+        self.total = None
 
     @cached_property
     def _account_hash(self):
@@ -91,20 +112,98 @@ class SchwabAccount:
         return None
 
     def calculate_allocations(self):
-        allocations = {}
-
         response = self._client.get_account(self._account_hash,
                                             fields=Client.Account.Fields.POSITIONS)
         assert response.status_code == httpx.codes.OK, response.raise_for_status()
 
-        total = response.json()['aggregatedBalance']['liquidationValue']
+        self.total = response.json()['aggregatedBalance']['liquidationValue']
         for position in response.json()['securitiesAccount']['positions']:
             ticker = position['instrument']['symbol']
             value = position['marketValue']
-            allocations[ticker] = value / total * 100
-        allocations['Cash'] = response.json()['securitiesAccount']['currentBalances']['cashAvailableForTrading'] / total * 100
+            percentage = value / self.total * 100
+            shares = position['shortQuantity'] + position['longQuantity']
+            self.portfolio.positions[ticker] = Position(value, percentage, shares)
+        cash = response.json()['securitiesAccount']['currentBalances']['cashAvailableForTrading']
+        # We set the number of shares of cash equal to the number of dollars to
+        # be akin to a money market fund, and because nothing else makes much
+        # sense.
+        self.portfolio.cash = Position(cash, cash / self.total * 100, cash)
 
-        return allocations
+    def lookup_price(self, symbol):
+        response = self._client.get_quote(symbol)
+        assert response.status_code == httpx.codes.OK, response.raise_for_status()
+
+        quote = response.json()[symbol]['quote']
+        return Price(quote['bidPrice'], quote['askPrice'])
+
+
+Buy = namedtuple('Buy', ['ticker', 'shares', 'price'])
+Sell = namedtuple('Sell', ['ticker', 'shares', 'price'])
+
+
+class AlwaysRebalance:
+    '''Buy and sell anything to get to the target AA.'''
+    @staticmethod
+    def analyze(account, target_allocation):
+        cash = account.portfolio.cash.dollars
+        orders = []
+        desired_buys = []
+
+        for ticker, position in account.portfolio.positions.items():
+            price = account.lookup_price(ticker)
+
+            if ticker not in target_allocation:
+                cash += position.shares * price.bid
+                orders.append(Sell(ticker, position.shares, price.bid))
+                continue
+            if position.percent > target_allocation[ticker]:
+                desired = account.total * target_allocation[ticker] / 100
+                surplus = position.dollars - desired
+                # We could take a number of approaches to dealing with
+                # over-under (since Schwab doesn't support fractional shares):
+                # 1. Sell until the next one would push us under, to reduce the
+                #    amount of churn.
+                # 2. Sell until we go under, to do more "sell high buy low".
+                # 3. Round to the nearest, to be as accurate as possible.
+                # Really it shouldn't matter much, unless you have very
+                # expensive shares compared to your positions (ie you're buying
+                # BRK/A).  We're going with option 1 because... I wanted to.
+                num_shares = surplus // price.bid
+                cash += num_shares * price.bid
+                orders.append(Sell(ticker, num_shares, price.bid))
+                continue
+            elif position.percent < target_allocation[ticker]:
+                desired = account.total * target_allocation[ticker] / 100
+                deficiency = desired - position.dollars
+                # See above note in the sell section on how to deal with
+                # boundary issues.  To match what's there, we're going to buy
+                # until the next would put us over.
+                num_shares = deficiency // price.ask
+                # Because all these bits don't necessarily add together nicely,
+                # we're going to just build a list of what we'd like to buy,
+                # and then once we know how much cash we'll have, go through
+                # and figure out what we can actually do.
+                desired_buys.append(Buy(ticker, num_shares, price.ask))
+                continue
+            else:
+                # We have exactly the perfect amount we want!
+                continue
+
+        # Sort by the highest share price first, so we can utilize as much of
+        # our cash as possible.
+        desired_buys.sort(key=lambda x: x.price, reverse=True)
+
+        for desired_buy in desired_buys:
+            if desired_buy.shares * desired_buy.price > cash:
+                # If we've run out of money to buy as much of this as we want,
+                # just get what we can.
+                num_shares = cash // desired_buy.price
+                # Named tuples are immutable, so we have to make a new one.
+                desired_buy = desired_buy._replace(shares=num_shares)
+            cash -= desired_buy.shares * desired_buy.price
+            orders.append(desired_buy)
+
+        return orders
 
 
 if __name__ == '__main__':
@@ -133,9 +232,15 @@ if __name__ == '__main__':
         account_numbers = [x.strip() for x in str(config['accounts']).split(',')]
         for account_number in account_numbers:
             account = SchwabAccount(client, account_number)
-            current_allocation = account.calculate_allocations()
+            account.calculate_allocations()
             print('For account {}, the current asset allocation is:'
                   .format(account_number))
-            for ticker, percentage in current_allocation.items():
-                print('    {}: {}'.format(ticker, percentage))
+            print(account.portfolio)
             print()
+
+            changes = AlwaysRebalance.analyze(account, target_allocation)
+            print(changes)
+            #confirm or not
+            #account.execute_orders(changes)
+            #account.calculate_allocations()
+            #print(account.portfolio)
